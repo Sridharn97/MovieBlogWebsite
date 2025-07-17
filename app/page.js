@@ -97,7 +97,7 @@ export default function Home() {
   const cardsPerPage = 6;
   const totalPages = Math.ceil(blogs.length / cardsPerPage);
 
-  // Get blogs for current page
+
   const paginatedBlogs = blogs.slice((currentPage - 1) * cardsPerPage, currentPage * cardsPerPage);
 
   useEffect(() => {
@@ -243,7 +243,7 @@ export default function Home() {
           )}
         </div>
 
-        <h1>Doraemon Movie Blog</h1>
+        <h1>Adventure Movie Blogs</h1>
         <p>Explore timeless adventures with Nobita, Doraemon, and friends</p>
       </div>
 
