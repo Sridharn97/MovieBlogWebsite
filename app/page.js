@@ -244,7 +244,7 @@ export default function Home() {
         </div>
 
         <h1>Adventure Movie Blogs</h1>
-        <p>Explore timeless adventures with Nobita, Doraemon, and friends</p>
+        <p>Explore timeless adventures Movies</p>
       </div>
 
       {isLoggedIn && (
