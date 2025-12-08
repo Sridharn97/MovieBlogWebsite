@@ -1,9 +1,14 @@
 'use client';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 export default function BlogList({ blogs, isLoggedIn, selectedMovies, onMovieSelect, page }) {
- 
+  const router = useRouter();
   const cardSizeClass = page === 1 ? 'blog-card-large' : 'blog-card-default';
+
+  const handleMouseEnter = (slug) => {
+    router.prefetch(`/blog/${encodeURIComponent(slug)}`);
+  };
 
   return (
     <div className="blog-list">
@@ -17,7 +22,12 @@ export default function BlogList({ blogs, isLoggedIn, selectedMovies, onMovieSel
               className="movie-checkbox"
             />
           )}
-          <Link href={`/blog/${encodeURIComponent(blog.slug)}`} className={`blog-card ${cardSizeClass}`}>
+          <Link 
+            href={`/blog/${encodeURIComponent(blog.slug)}`} 
+            className={`blog-card ${cardSizeClass}`}
+            onMouseEnter={() => handleMouseEnter(blog.slug)}
+            prefetch={true}
+          >
             <div className="card-content">
               <img src={blog.image} alt={blog.title} />
               <h3>{blog.title}</h3>
