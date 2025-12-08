@@ -1,111 +1,113 @@
-'use client';
 import { notFound } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import { use } from 'react'; 
 
-const blogs = [
+const defaultBlogs = [
   {
     slug: 'nobitas-dinosaur-2006',
     title: "🦕 Nobita's Dinosaur 2006",
     image: "/images/nobitas-dinosaur.jpg",
-    content: "Nobita hatches a dinosaur using Doraemon’s gadget and raises it with care, leading to an emotional journey to return it to its own time."
+    content: "Nobita hatches a dinosaur and sets off on a heartwarming adventure to return it to its time."
   },
   {
     slug: 'stand-by-me-doraemon',
     title: "👫 Stand By Me Doraemon",
     image: "/images/stand-by-me.jpg",
-    content: "An emotional 3D animated retelling of Nobita and Doraemon’s bond, filled with nostalgia, life lessons, and heartfelt moments."
+    content: "A 3D retelling of Doraemon's mission to help Nobita find confidence and love."
   },
   {
     slug: 'nobitas-little-star-wars',
     title: "🚀 Nobita's Little Star Wars",
     image: "/images/little-star-wars.jpg",
-    content: "Nobita and friends join a miniature alien resistance to fight tyranny in outer space. A fun blend of action and sci-fi."
+    content: "Nobita and friends help tiny alien rebels in an interstellar war of justice."
   },
   {
     slug: 'great-adventure-into-the-underworld',
     title: "🌌 New Great Adventure into the Underworld",
     image: "/images/underworld.jpg",
-    content: "A magical journey beneath the earth where Nobita and the gang battle dark forces to save a hidden civilization."
+    content: "A magical quest to save the underworld from an evil invasion."
   },
   {
     slug: 'nobita-and-the-steel-troops',
     title: "🤖 Nobita and the Steel Troops",
     image: "/images/steel-troops.jpg",
-    content: "An epic battle with robotic invaders where Nobita and friends must defend Earth from a mechanical threat."
+    content: "Robots from another world threaten Earth, and Nobita must stop them."
   },
   {
     slug: 'kingdom-of-clouds',
     title: "☁️ Kingdom of Clouds",
     image: "/images/kingdom-of-clouds.jpg",
-    content: "Nobita discovers a secret world in the clouds, but peace is threatened by human interference. Can they protect this floating kingdom?"
+    content: "A sky-high journey into a world above the clouds, filled with secrets and wonder."
   },
   {
     slug: 'secret-gadget-museum',
     title: "🔧 Secret Gadget Museum",
     image: "/images/secret-gadget-museum.jpg",
-    content: "Doraemon’s gadgets are mysteriously stolen, leading to a thrilling mystery adventure inside the futuristic museum."
+    content: "Doraemon's gadgets are stolen, sparking a mystery adventure in a futuristic museum."
   },
   {
     slug: 'legend-of-the-sun-king',
     title: "🌞 Legend of the Sun King",
     image: "/images/sun-king.jpg",
-    content: "Nobita finds himself in an ancient kingdom where he’s mistaken for royalty. A tale of destiny and courage unfolds."
+    content: "Nobita is mistaken for a prince in an ancient kingdom with a mysterious curse."
   },
   {
     slug: 'great-adventure-in-the-antarctic',
     title: "❄️ Great Adventure in the Antarctic",
     image: "/images/antarctica.jpg",
-    content: "Frozen secrets and buried civilizations await as Doraemon and team explore the icy wilderness of Antarctica."
+    content: "A chilling expedition into Antarctica unveils ancient secrets and hidden threats."
   },
   {
     slug: 'birth-of-japan',
     title: "🏯 Birth of Japan",
     image: "/images/birth-of-japan.jpg",
-    content: "Traveling to ancient times, the kids witness the formation of Japan and take part in shaping myths and legends."
+    content: "Nobita and friends travel to the origins of Japan in this cultural time-travel epic."
   },
   {
     slug: 'nobita-and-the-windmasters',
     title: "🌬️ Nobita and the Windmasters",
     image: "/images/windmasters.jpg",
-    content: "A whirlwind adventure into a mystical realm where wind spirits need Nobita’s help to restore balance."
+    content: "The gang enters a world ruled by wind spirits and faces off against an ancient evil."
   },
   {
     slug: 'drifts-in-the-universe',
     title: "🌠 Drifts in the Universe",
     image: "/images/universe-drift.jpg",
-    content: "An out-of-this-world rescue mission as Nobita and friends drift into deep space and discover galactic wonders."
+    content: "A space adventure where Nobita and team drift into the unknown corners of the universe."
   }
 ];
 
+export async function generateStaticParams() {
+  return defaultBlogs.map((blog) => ({
+    slug: blog.slug,
+  }));
+}
+
+export async function generateMetadata({ params }) {
+  const blog = defaultBlogs.find((b) => b.slug === params.slug);
+
+  if (!blog) {
+    return {
+      title: 'Blog Not Found',
+    };
+  }
+
+  return {
+    title: blog.title,
+    description: blog.content,
+  };
+}
+
 export default function BlogDetails({ params }) {
-  const { slug } = use(params);
-  const [blog, setBlog] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const blog = defaultBlogs.find((b) => b.slug === params.slug);
 
-  useEffect(() => {
-   
-    const storedBlogs = JSON.parse(localStorage.getItem('blogs')) || [];
-    
-    // Find the blog with matching slug
-    const foundBlog = storedBlogs.find(b => b.slug === params.slug);
-    
-    if (foundBlog) {
-      setBlog(foundBlog);
-    } else {
-      notFound();
-    }
-    setLoading(false);
-  }, [params.slug]);
-
-  if (loading) return <div className="loading">Loading...</div>;
-  if (!blog) notFound();
+  if (!blog) {
+    notFound();
+  }
 
   return (
     <div className="blog-details">
       <h1>{blog.title}</h1>
-      <img src={blog.image} alt={blog.title} />
-      <p>{blog.content || blog.summary}</p>
+      <img src={blog.image} alt={blog.title} style={{ maxWidth: '100%', height: 'auto' }} />
+      <p>{blog.content}</p>
     </div>
   );
 }
