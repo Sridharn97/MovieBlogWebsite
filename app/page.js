@@ -101,11 +101,19 @@ export default function Home() {
   const paginatedBlogs = blogs.slice((currentPage - 1) * cardsPerPage, currentPage * cardsPerPage);
 
   useEffect(() => {
-    const storedBlogs = localStorage.getItem('blogs');
-    if (storedBlogs) {
-      setBlogs(JSON.parse(storedBlogs));
-    } else {
-      localStorage.setItem('blogs', JSON.stringify(initialBlogs));
+    try {
+      const storedBlogs = localStorage.getItem('blogs');
+      if (storedBlogs) {
+        const parsedBlogs = JSON.parse(storedBlogs);
+        setBlogs(parsedBlogs);
+      } else {
+        // Store initial blogs in localStorage on first load
+        localStorage.setItem('blogs', JSON.stringify(initialBlogs));
+        setBlogs(initialBlogs);
+      }
+    } catch (error) {
+      console.error('Error reading from localStorage:', error);
+      setBlogs(initialBlogs);
     }
 
     const user = localStorage.getItem('loggedInUser');
@@ -195,7 +203,13 @@ export default function Home() {
       return;
     }
 
-    const updatedBlogs = [...blogs, newMovie];
+    // Add content field (same as summary for new movies)
+    const movieToAdd = {
+      ...newMovie,
+      content: newMovie.summary
+    };
+
+    const updatedBlogs = [...blogs, movieToAdd];
     setBlogs(updatedBlogs);
     localStorage.setItem('blogs', JSON.stringify(updatedBlogs));
     setNewMovie({
@@ -205,6 +219,7 @@ export default function Home() {
       summary: ''
     });
     setShowAddForm(false);
+    alert('Movie added successfully!');
   };
 
   const handleUpdateSubmit = (e) => {
@@ -215,14 +230,20 @@ export default function Home() {
       return;
     }
 
+    const updatedMovie = {
+      ...movieToUpdate,
+      content: movieToUpdate.summary // Keep content in sync with summary
+    };
+
     const updatedBlogs = blogs.map(blog => 
-      blog.slug === selectedMovies[0] ? movieToUpdate : blog
+      blog.slug === selectedMovies[0] ? updatedMovie : blog
     );
     
     setBlogs(updatedBlogs);
     localStorage.setItem('blogs', JSON.stringify(updatedBlogs));
     setShowUpdateForm(false);
     setSelectedMovies([]);
+    alert('Movie updated successfully!');
   };
 
   return (

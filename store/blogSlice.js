@@ -1,9 +1,4 @@
-'use client';
-
-import { useEffect, useState } from 'react';
-import { use } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { setBlog } from '@/store/blogSlice';
+import { createSlice } from '@reduxjs/toolkit';
 
 const defaultBlogs = [
   {
@@ -80,50 +75,21 @@ const defaultBlogs = [
   }
 ];
 
-export default function BlogDetails({ params }) {
-  const { slug } = use(params);
-  const dispatch = useDispatch();
-  const { selectedBlog } = useSelector((state) => state.blogs);
-  const [allBlogs, setAllBlogs] = useState([...defaultBlogs]);
+const blogSlice = createSlice({
+  name: 'blogs',
+  initialState: {
+    allBlogs: defaultBlogs,
+    selectedBlog: null,
+  },
+  reducers: {
+    setBlog: (state, action) => {
+      state.selectedBlog = action.payload;
+    },
+    getAllBlogs: (state) => {
+      return state.allBlogs;
+    },
+  },
+});
 
-  useEffect(() => {
-    try {
-      // Get stored blogs from localStorage
-      const storedBlogs = localStorage.getItem('blogs');
-      if (storedBlogs) {
-        const parsedBlogs = JSON.parse(storedBlogs);
-        setAllBlogs(parsedBlogs);
-      }
-    } catch (error) {
-      console.error('Error reading localStorage:', error);
-    }
-  }, []);
-
-  useEffect(() => {
-    // Find blog from all available blogs (default + custom)
-    const blog = allBlogs.find((b) => b.slug === slug);
-    if (blog) {
-      dispatch(setBlog(blog));
-    }
-  }, [slug, allBlogs, dispatch]);
-
-  // Use selectedBlog from Redux if available, otherwise find it locally
-  const currentBlog = selectedBlog || allBlogs.find((b) => b.slug === slug);
-
-  if (!currentBlog) {
-    return (
-      <div className="blog-details">
-        <h1>Blog Not Found</h1>
-        <p>Sorry, the blog post you're looking for doesn't exist.</p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="blog-details">
-      <h1>{currentBlog.title}</h1>
-      <img src={currentBlog.image} alt={currentBlog.title} style={{ maxWidth: '100%', height: 'auto' }} />
-      <p>{currentBlog.content || currentBlog.summary}</p>
-    </div>
-  );
-}
+export const { setBlog, getAllBlogs } = blogSlice.actions;
+export default blogSlice.reducer;
