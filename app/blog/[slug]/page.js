@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { use } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { setBlog } from '@/store/blogSlice';
+import { fetchBlogs } from '@/lib/blogService';
 
 const defaultBlogs = [
   {
@@ -87,16 +88,17 @@ export default function BlogDetails({ params }) {
   const [allBlogs, setAllBlogs] = useState([...defaultBlogs]);
 
   useEffect(() => {
-    try {
-      // Get stored blogs from localStorage
-      const storedBlogs = localStorage.getItem('blogs');
-      if (storedBlogs) {
-        const parsedBlogs = JSON.parse(storedBlogs);
-        setAllBlogs(parsedBlogs);
+    const loadBlogs = async () => {
+      try {
+        const data = await fetchBlogs();
+        setAllBlogs(data || [...defaultBlogs]);
+      } catch (error) {
+        console.error('Error loading blogs:', error);
+        setAllBlogs([...defaultBlogs]);
       }
-    } catch (error) {
-      console.error('Error reading localStorage:', error);
-    }
+    };
+    
+    loadBlogs();
   }, []);
 
   useEffect(() => {

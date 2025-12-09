@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import BlogList from './Components/BlogList';
+import { fetchBlogs, addBlog, updateBlog, deleteBlogs } from '@/lib/blogService';
 
 const initialBlogs = [
   {
@@ -101,20 +102,22 @@ export default function Home() {
   const paginatedBlogs = blogs.slice((currentPage - 1) * cardsPerPage, currentPage * cardsPerPage);
 
   useEffect(() => {
-    try {
-      const storedBlogs = localStorage.getItem('blogs');
-      if (storedBlogs) {
-        const parsedBlogs = JSON.parse(storedBlogs);
-        setBlogs(parsedBlogs);
-      } else {
-        // Store initial blogs in localStorage on first load
-        localStorage.setItem('blogs', JSON.stringify(initialBlogs));
+    const loadBlogs = async () => {
+      try {
+        const data = await fetchBlogs();
+        if (data && data.length > 0) {
+          setBlogs(data);
+        } else {
+          // If no blogs in database, use initial blogs
+          setBlogs(initialBlogs);
+        }
+      } catch (error) {
+        console.error('Error loading blogs:', error);
         setBlogs(initialBlogs);
       }
-    } catch (error) {
-      console.error('Error reading from localStorage:', error);
-      setBlogs(initialBlogs);
-    }
+    };
+
+    loadBlogs();
 
     const user = localStorage.getItem('loggedInUser');
     if (user) {
@@ -154,16 +157,31 @@ export default function Home() {
     setShowAddForm(false);
   };
 
-  const handleDeleteMovies = () => {
+  const handleDeleteMovies = async () => {
     if (selectedMovies.length === 0) {
       alert('Please select at least one movie to delete');
       return;
     }
 
-    const updatedBlogs = blogs.filter(blog => !selectedMovies.includes(blog.slug));
-    setBlogs(updatedBlogs);
-    localStorage.setItem('blogs', JSON.stringify(updatedBlogs));
-    setSelectedMovies([]);
+    if (!confirm('Are you sure you want to delete the selected movies?')) {
+      return;
+    }
+
+    try {
+      const result = await deleteBlogs(selectedMovies);
+      
+      if (result.success) {
+        const updatedBlogs = await fetchBlogs();
+        setBlogs(updatedBlogs);
+        setSelectedMovies([]);
+        alert('Movie(s) deleted successfully!');
+      } else {
+        alert('Error deleting movies: ' + result.error);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Error deleting movies');
+    }
   };
 
   const handleMovieSelect = (slug) => {
@@ -189,7 +207,7 @@ export default function Home() {
     }
   };
 
-  const handleSubmitMovie = (e) => {
+  const handleSubmitMovie = async (e) => {
     e.preventDefault();
     
     if (!newMovie.title || !newMovie.slug || !newMovie.image || !newMovie.summary) {
@@ -203,26 +221,34 @@ export default function Home() {
       return;
     }
 
-    // Add content field (same as summary for new movies)
-    const movieToAdd = {
-      ...newMovie,
-      content: newMovie.summary
-    };
+    try {
+      const result = await addBlog({
+        ...newMovie,
+        content: newMovie.summary,
+        userId: null
+      });
 
-    const updatedBlogs = [...blogs, movieToAdd];
-    setBlogs(updatedBlogs);
-    localStorage.setItem('blogs', JSON.stringify(updatedBlogs));
-    setNewMovie({
-      title: '',
-      slug: '',
-      image: '',
-      summary: ''
-    });
-    setShowAddForm(false);
-    alert('Movie added successfully!');
+      if (result.success) {
+        const updatedBlogs = await fetchBlogs();
+        setBlogs(updatedBlogs);
+        setNewMovie({
+          title: '',
+          slug: '',
+          image: '',
+          summary: ''
+        });
+        setShowAddForm(false);
+        alert('Movie added successfully!');
+      } else {
+        alert('Error adding movie: ' + result.error);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Error adding movie');
+    }
   };
 
-  const handleUpdateSubmit = (e) => {
+  const handleUpdateSubmit = async (e) => {
     e.preventDefault();
     
     if (!movieToUpdate.title || !movieToUpdate.slug || !movieToUpdate.image || !movieToUpdate.summary) {
@@ -230,20 +256,27 @@ export default function Home() {
       return;
     }
 
-    const updatedMovie = {
-      ...movieToUpdate,
-      content: movieToUpdate.summary // Keep content in sync with summary
-    };
+    try {
+      const result = await updateBlog(selectedMovies[0], {
+        title: movieToUpdate.title,
+        image: movieToUpdate.image,
+        summary: movieToUpdate.summary,
+        content: movieToUpdate.summary
+      });
 
-    const updatedBlogs = blogs.map(blog => 
-      blog.slug === selectedMovies[0] ? updatedMovie : blog
-    );
-    
-    setBlogs(updatedBlogs);
-    localStorage.setItem('blogs', JSON.stringify(updatedBlogs));
-    setShowUpdateForm(false);
-    setSelectedMovies([]);
-    alert('Movie updated successfully!');
+      if (result.success) {
+        const updatedBlogs = await fetchBlogs();
+        setBlogs(updatedBlogs);
+        setShowUpdateForm(false);
+        setSelectedMovies([]);
+        alert('Movie updated successfully!');
+      } else {
+        alert('Error updating movie: ' + result.error);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Error updating movie');
+    }
   };
 
   return (
