@@ -27,7 +27,7 @@ export default function AdminDashboard() {
 
     const storedBlogs = JSON.parse(localStorage.getItem('blogs')) || [];
     setBlogs(storedBlogs);
-  }, []);
+  }, [router]);
 
   const handleAdd = () => {
     const { title, slug, image, summary, content } = newBlog;

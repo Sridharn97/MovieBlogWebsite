@@ -114,7 +114,7 @@ export default function BlogDetails({ params }) {
     return (
       <div className="blog-details">
         <h1>Blog Not Found</h1>
-        <p>Sorry, the blog post you're looking for doesn't exist.</p>
+        <p>Sorry, the blog post you&apos;re looking for doesn&apos;t exist.</p>
       </div>
     );
   }
